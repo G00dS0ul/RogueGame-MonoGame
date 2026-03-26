@@ -78,23 +78,30 @@ namespace RogueSharp_MonoGame.Systems
 
         public void ActivateMonsters()
         {
-            ISchedulable schedulable = GameSession.SchedulingSystem.Get();
-            if(schedulable is Player)
+            while (true)
             {
-                IsPlayerTurn = true;
-                GameSession.SchedulingSystem.Add(GameSession.Player);
-            }
-            else
-            {
-                var monster = schedulable as Core.Monster;
-
-                if (monster != null)
+                if (!GameSession.SchedulingSystem.HasItems())
                 {
-                    monster.PerformAction(this);
-                    GameSession.SchedulingSystem.Add(monster);
+                    IsPlayerTurn = true;
+                    return;
                 }
 
-                ActivateMonsters();
+                var schedulable = GameSession.SchedulingSystem.Get();
+                if (schedulable is Player)
+                {
+                    IsPlayerTurn = true;
+                    GameSession.SchedulingSystem.Add(GameSession.Player);
+                    return;
+                }
+                else
+                {
+                    if (schedulable is Core.Monster monster)
+                    {
+                        monster.PerformAction(this);
+                        GameSession.SchedulingSystem.Add(monster);
+                    }
+
+                }
             }
         }
 
@@ -167,6 +174,11 @@ namespace RogueSharp_MonoGame.Systems
             if (damage > 0)
             {
                 defender.Health -= damage;
+
+                if (defender.Health < 0)
+                {
+                    defender.Health = 0;
+                }
 
                 GameSession.MessageLog.Add($"{defender.Name} was hit for {damage} damage ");
 

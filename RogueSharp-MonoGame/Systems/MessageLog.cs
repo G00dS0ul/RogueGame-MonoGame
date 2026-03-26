@@ -31,7 +31,7 @@ namespace RogueSharp_MonoGame.Systems
             var messages = _messages.ToArray();
             for (var i = 0; i < messages.Length; i++)
             {
-                spriteBatch.DrawString(font, messages[i], new Vector2(10, startY + (i * 18)), Color.White);
+                spriteBatch.DrawString(font, messages[i], new Vector2(10, startY + (i * 22)), Color.White);
             }
         }
     }

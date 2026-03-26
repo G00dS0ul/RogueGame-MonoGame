@@ -1,7 +1,9 @@
 ﻿using RogueSharp_MonoGame.Core;
-using Microsoft.Xna.Framework;
 using RogueSharp_MonoGame.Monster;
+using RogueSharp;
 using RogueSharp.DiceNotation;
+using Point = Microsoft.Xna.Framework.Point;
+using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace RogueSharp_MonoGame.Systems
 {
@@ -15,7 +17,7 @@ namespace RogueSharp_MonoGame.Systems
 
         private readonly DungeonMap _map;
 
-        public MapGenerator(int width, int height, int maxRooms, int roomMinSize, int roomMaxSize)
+        public MapGenerator(int width, int height, int maxRooms, int roomMinSize, int roomMaxSize, int mapLevel)
         {
             _width = width;
             _height = height;
@@ -33,8 +35,8 @@ namespace RogueSharp_MonoGame.Systems
             {
                 var roomWidth = GameSession.Random.Next(_roomMinSize, _roomMaxSize);
                 var roomHeight = GameSession.Random.Next(_roomMinSize, _roomMaxSize);
-                var roomXPosition = GameSession.Random.Next(0, _width - roomWidth - 1);
-                var roomYPosition = GameSession.Random.Next(0, _height - roomHeight - 1);
+                var roomXPosition = GameSession.Random.Next(1, _width - roomWidth - 1);
+                var roomYPosition = GameSession.Random.Next(1, _height - roomHeight - 1);
 
                 var newRoom = new Rectangle(roomXPosition, roomYPosition, roomWidth, roomHeight);
 
@@ -50,6 +52,8 @@ namespace RogueSharp_MonoGame.Systems
             {
                 CreateRoom(room);
             }
+
+            CreateStairs();
 
             PlacePlayer();
 
@@ -70,6 +74,12 @@ namespace RogueSharp_MonoGame.Systems
                     CreateVerticalTunnel(previousRoomCenterY, currentRoomCenterY, previousRoomCenterX);
                     CreateHorizontalTunnel(previousRoomCenterX, currentRoomCenterX, currentRoomCenterY);
                 }
+            }
+
+            foreach (var room in _map.Rooms)
+            {
+                CreateDoors(room);
+
             }
 
             PlaceMonsters();
@@ -141,6 +151,88 @@ namespace RogueSharp_MonoGame.Systems
             {
                 _map.SetCellProperties(xPosition, y, true, true);
             }
+        }
+
+        private void CreateDoors(Rectangle room)
+        {
+            var xMin = room.Left -1;
+            var xMax = room.Right;
+            var yMin = room.Top - 1;
+            var yMax = room.Bottom;
+
+            var borderCells = new List<ICell>();
+
+            borderCells = _map.GetCellsAlongLine(xMin, yMin, xMax, yMin).ToList();
+            borderCells.AddRange(_map.GetCellsAlongLine(xMin, yMin, xMin, yMax));
+            borderCells.AddRange(_map.GetCellsAlongLine(xMin, yMax, xMax, yMax));
+            borderCells.AddRange(_map.GetCellsAlongLine(xMax, yMin, xMax, yMax));
+
+            foreach (var cell in borderCells)
+            {
+                if (IsPotentialDoor(cell))
+                {
+                    _map.SetCellProperties(cell.X, cell.Y, false, false);
+                    _map.AddDoor(new Door
+                    {
+                        X = cell.X,
+                        Y = cell.Y,
+                        IsOpen = false
+                    });
+                }
+            }
+        }
+
+        private bool IsPotentialDoor(ICell cell)
+        {
+            if (!cell.IsWalkable)
+            {
+                return false;
+            }
+
+            if (cell.X <= 0 || cell.X >= _map.Width - 1 || cell.Y <= 0 || cell.Y >= _map.Height - 1)
+            {
+                return false;
+            }
+
+            var right = _map.GetCell(cell.X + 1, cell.Y);
+            var left = _map.GetCell(cell.X - 1, cell.Y);
+            var top = _map.GetCell(cell.X, cell.Y + 1);
+            var bottom = _map.GetCell(cell.X, cell.Y - 1);
+
+            if (_map.GetDoor(cell.X, cell.Y) != null || _map.GetDoor(right.X, right.Y) != null ||
+                _map.GetDoor(left.X, left.Y) != null || _map.GetDoor(top.X, top.Y) != null ||
+                _map.GetDoor(bottom.X, bottom.Y) != null)
+            {
+                return false;
+            }
+
+            if (!right.IsWalkable && !left.IsWalkable && top.IsWalkable && bottom.IsWalkable)
+            {
+                return true;
+            }
+
+            if (right.IsWalkable && left.IsWalkable && !top.IsWalkable && !bottom.IsWalkable)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private void CreateStairs()
+        {
+            _map.StairsUp = new Stairs
+            {
+                X = _map.Rooms.First().Center.X + 1,
+                Y = _map.Rooms.First().Center.Y,
+                IsUp = true
+            };
+            _map.StairsDown = new Stairs
+            {
+                X = _map.Rooms.Last().Center.X,
+                Y = _map.Rooms.Last().Center.Y,
+                IsUp = false
+            };
         }
     }
 }

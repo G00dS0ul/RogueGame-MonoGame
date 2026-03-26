@@ -18,6 +18,7 @@ namespace RogueSharp_MonoGame
         private KeyboardState _previousKeyboardState;
         private SpriteFont _font;
         private CommandSystem _commandSystem = new CommandSystem();
+        private static int _mapLevel = 1;
 
         public static MessageLog MessageLog { get; private set; } = new MessageLog();
 
@@ -36,7 +37,7 @@ namespace RogueSharp_MonoGame
         public const int MapPixelWidth = MapWidth * TileSize * TileScale;   // 800
         public const int MapPixelHeight = MapHeight * TileSize * TileScale; // 480
         public const int StatsWidth = 200;
-        public const int MessageLogHeight = 150;
+        public const int MessageLogHeight = 270;
 
         protected override void Initialize()
         {
@@ -50,7 +51,7 @@ namespace RogueSharp_MonoGame
             GameSession.SchedulingSystem = new SchedulingSystem();
             GameSession.CommandSystem = _commandSystem;
 
-            var mapGenerator = new MapGenerator(MapWidth, MapHeight, 20, 5, 10);
+            var mapGenerator = new MapGenerator(MapWidth, MapHeight, 20, 5, 10, _mapLevel);
             GameSession.DungeonMap = mapGenerator.CreateMap();
 
             GameSession.SchedulingSystem.Add(GameSession.Player);
@@ -79,6 +80,12 @@ namespace RogueSharp_MonoGame
 
             if (GameSession.Player != null && GameSession.DungeonMap != null)
             {
+                if (GameSession.Player.Health <= 0)
+                {
+                    _previousKeyboardState = currentKeyboardState;
+                    base.Update(gameTime);
+                    return;
+                }
 
                 if (_commandSystem.IsPlayerTurn)
                 {
@@ -100,6 +107,52 @@ namespace RogueSharp_MonoGame
                     if (currentKeyboardState.IsKeyDown(Keys.Right) && _previousKeyboardState.IsKeyUp(Keys.Right))
                     {
                         direction = Direction.Right;
+                    }
+
+                    if (currentKeyboardState.IsKeyDown(Keys.OemPeriod) && _previousKeyboardState.IsKeyUp(Keys.OemPeriod))
+                    {
+                        if (GameSession.DungeonMap.CanMoveDownToNextLevel())
+                        {
+                            _mapLevel++;
+
+                            var mapGenerator = new MapGenerator(MapWidth, MapHeight, 20, 5, 10, _mapLevel);
+                            GameSession.DungeonMap = mapGenerator.CreateMap();
+
+                            MessageLog.Add($"You descend into the dungeon... level {_mapLevel}.");
+
+                            didPlayerAct = true;
+                        }
+                        else
+                        {
+                            MessageLog.Add("You can't go down here yet. Defeat all the monsters on this level first!");
+                        }
+                    }
+
+                    if (currentKeyboardState.IsKeyDown(Keys.OemComma) && _previousKeyboardState.IsKeyUp(Keys.OemComma))
+                    {
+                        if (GameSession.DungeonMap.CanMoveUpToPreviousLevel())
+                        {
+                            if (_mapLevel == 1)
+                            {
+                                MessageLog.Add("You cannot go up, you are already on the first level!!!");
+                            }
+                            else
+                            {
+                                _mapLevel--;
+
+                                var mapGenerator = new MapGenerator(MapWidth, MapHeight, 20, 5, 10, _mapLevel);
+                                GameSession.DungeonMap = mapGenerator.CreateMap();
+
+                                MessageLog.Add($"You ascend the stairs to level {_mapLevel}");
+
+                                didPlayerAct = true;
+                            }
+                        }
+
+                        else
+                        {
+                            MessageLog.Add("You aren't tanding on upward stairs.");
+                        }
                     }
 
                     if (direction.HasValue)

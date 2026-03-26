@@ -22,7 +22,7 @@ namespace RogueSharp_MonoGame.Behavior
                 monsterFov.ComputeFov(monster.X, monster.Y, monster.Awareness, true);
                 if(monsterFov.IsInFov(player.X, player.Y))
                 {
-                    GameSession.MessageLog.Add($"{monster.Name} i eager to fight {player.Name}");
+                    GameSession.MessageLog.Add($"{monster.Name} is eager to fight {player.Name}");
                     monster.TurnsAlerted = 1;
                 }
             }

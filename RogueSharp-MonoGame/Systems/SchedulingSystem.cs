@@ -60,6 +60,11 @@ namespace RogueSharp_MonoGame.Systems
             return firstSchedulable;
         }
 
+        public bool HasItems()
+        {
+            return _schedulables.Count > 0;
+        }
+
         public int GetTime()
         {
             return _time;

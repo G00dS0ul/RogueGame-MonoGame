@@ -27,11 +27,11 @@ namespace RogueSharp_MonoGame.Core
         public static Color AlternateDarkest = new Color(71, 62, 45);
 
         // Compliment Color Swatch
-        public Color ComplimentLightest = new Color(190, 180, 174);
-        public Color ComplimentLighter = new Color(158, 147, 138);
-        public Color Compliment = new Color(129, 116, 107);
-        public Color ComplimentDarker = new Color(97, 84, 75);
-        public Color ComplimentDarkest = new Color(71, 56, 45);
+        public static Color ComplimentLightest = new Color(190, 180, 174);
+        public static Color ComplimentLighter = new Color(158, 147, 138);
+        public static Color Compliment = new Color(129, 116, 107);
+        public static Color ComplimentDarker = new Color(97, 84, 75);
+        public static Color ComplimentDarkest = new Color(71, 56, 45);
 
         public static Color DbDark = new Color(20, 12, 28);
         public static Color DbOldBlood = new Color(68, 36, 52);
