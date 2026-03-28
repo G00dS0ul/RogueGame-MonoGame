@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueSharp_MonoGame.Interfaces;
-using RogueSharp;
 using IDrawable = RogueSharp_MonoGame.Interfaces.IDrawable;
 
 namespace RogueSharp_MonoGame.Core
@@ -119,29 +118,32 @@ namespace RogueSharp_MonoGame.Core
         public int X { get; set; }
         public int Y { get; set; }
 
-        #endregion
-
-
         public int Time
         {
             get => Speed;
         }
+
+        #endregion
+
+
+        #region Public Method
+
         public void Draw(SpriteBatch spriteBatch, Texture2D tileset)
         {
-            //var cell = map.GetCell(X, Y);
-            //if (!cell.IsExplored)
-            //{
-            //    return;
-            //}
+            var sourceRect = RogueGame.GetSourceRect(this.Symbol);
 
-            //if (cell.IsInFov)
-            //{
-            //    console.Set(X, Y, Color, Colors.FloorBackgroundFov, Symbol);
-            //}
-            //else
-            //{
-            //    console.Set(X, Y, Color, Colors.FloorBackground, '.');
-            //}
+            var destRect = new Rectangle(
+                this.X * RogueGame.TileSize * RogueGame.TileScale,
+                this.Y * RogueGame.TileSize * RogueGame.TileScale,
+                RogueGame.TileSize * RogueGame.TileScale,
+                RogueGame.TileSize * RogueGame.TileScale
+            );
+
+            spriteBatch.Draw(tileset, destRect, sourceRect, this.Color);
         }
+
+        #endregion
+
+
     }
 }

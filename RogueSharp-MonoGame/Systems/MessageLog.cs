@@ -5,14 +5,19 @@ namespace RogueSharp_MonoGame.Systems
 {
     public class MessageLog
     {
-        private static readonly int _maxLines = 10;
+        #region Backing Variable
 
+        private static readonly int _maxLines = 10;
         private readonly Queue<string> _messages;
+
+        #endregion
 
         public MessageLog()
         {
             _messages = new Queue<string>();
         }
+
+        #region Public Methods
 
         public void Add(string message)
         {
@@ -34,5 +39,9 @@ namespace RogueSharp_MonoGame.Systems
                 spriteBatch.DrawString(font, messages[i], new Vector2(10, startY + (i * 22)), Color.White);
             }
         }
+
+        #endregion
+
+
     }
 }

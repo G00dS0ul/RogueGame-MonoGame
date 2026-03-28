@@ -9,13 +9,16 @@ namespace RogueSharp_MonoGame.Systems
 {
     public class MapGenerator
     {
+        #region Backing Variable
+
         private readonly int _width;
         private readonly int _height;
         private readonly int _maxRooms;
         private readonly int _roomMinSize;
         private readonly int _roomMaxSize;
-
         private readonly DungeonMap _map;
+
+        #endregion
 
         public MapGenerator(int width, int height, int maxRooms, int roomMinSize, int roomMaxSize, int mapLevel)
         {
@@ -27,6 +30,9 @@ namespace RogueSharp_MonoGame.Systems
             _roomMaxSize = roomMaxSize;
             _map = new DungeonMap();
         }
+
+        #region Public Methods
+
         public DungeonMap CreateMap()
         {
             _map.Initialize(_width, _height);
@@ -48,7 +54,7 @@ namespace RogueSharp_MonoGame.Systems
                 }
             }
 
-            foreach ( var room in _map.Rooms)
+            foreach (var room in _map.Rooms)
             {
                 CreateRoom(room);
             }
@@ -86,6 +92,10 @@ namespace RogueSharp_MonoGame.Systems
 
             return _map;
         }
+
+        #endregion
+
+        #region Private Method
 
         private void CreateRoom(Rectangle room)
         {
@@ -155,7 +165,7 @@ namespace RogueSharp_MonoGame.Systems
 
         private void CreateDoors(Rectangle room)
         {
-            var xMin = room.Left -1;
+            var xMin = room.Left - 1;
             var xMax = room.Right;
             var yMin = room.Top - 1;
             var yMax = room.Bottom;
@@ -234,5 +244,8 @@ namespace RogueSharp_MonoGame.Systems
                 IsUp = false
             };
         }
+
+        #endregion
+
     }
 }

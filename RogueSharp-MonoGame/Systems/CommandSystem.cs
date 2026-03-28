@@ -1,16 +1,20 @@
 ﻿using System.Text;
-using Microsoft.Xna.Framework;
 using RogueSharp_MonoGame.Core;
-using RogueSharp_MonoGame.Interfaces;
 using RogueSharp;
 using RogueSharp.DiceNotation;
-using Monster = RogueSharp_MonoGame.Core.Monster;
 
 namespace RogueSharp_MonoGame.Systems
 {
     public class CommandSystem
     {
+        #region Properties
+
         public bool IsPlayerTurn { get; set; }
+
+        #endregion
+
+        #region Public Methods
+
         public bool MovePlayer(Direction? direction)
         {
             var x = GameSession.Player.X;
@@ -19,10 +23,10 @@ namespace RogueSharp_MonoGame.Systems
             switch (direction)
             {
                 case Direction.Up:
-                    y = GameSession.Player.Y - 1; 
+                    y = GameSession.Player.Y - 1;
                     break;
                 case Direction.Down:
-                    y = GameSession.Player.Y + 1; 
+                    y = GameSession.Player.Y + 1;
                     break;
                 case Direction.Left:
                     x = GameSession.Player.X - 1;
@@ -115,6 +119,12 @@ namespace RogueSharp_MonoGame.Systems
                 }
             }
         }
+
+        #endregion
+
+
+        #region Private Method
+
         private static int ResolveAttack(Actor attacker, Actor defender, StringBuilder attackMessage)
         {
             var hits = 0;
@@ -126,9 +136,9 @@ namespace RogueSharp_MonoGame.Systems
 
             foreach (var termResult in attackResult.Results)
             {
-                attackMessage.Append( termResult.Value + ", ");
+                attackMessage.Append(termResult.Value + ", ");
 
-                if(termResult.Value >= 100 - attacker.AttackChance)
+                if (termResult.Value >= 100 - attacker.AttackChance)
                 {
                     hits++;
                 }
@@ -144,8 +154,8 @@ namespace RogueSharp_MonoGame.Systems
 
             if (hits > 0)
             {
-                attackMessage.AppendFormat( " scoring {0} hits.", hits);
-                defenseMessage.AppendFormat( " {0} defends and rolls: ", defender.Name);
+                attackMessage.AppendFormat(" scoring {0} hits.", hits);
+                defenseMessage.AppendFormat(" {0} defends and rolls: ", defender.Name);
 
                 var defenseDice = new DiceExpression().Dice(defender.Defense, 100);
                 var defenseRoll = defenseDice.Roll();
@@ -159,7 +169,7 @@ namespace RogueSharp_MonoGame.Systems
                         block++;
                     }
                 }
-                defenseMessage.AppendFormat( " blocking {0} hits.", block);
+                defenseMessage.AppendFormat(" blocking {0} hits.", block);
             }
             else
             {
@@ -205,5 +215,7 @@ namespace RogueSharp_MonoGame.Systems
                 GameSession.MessageLog.Add($"{defender.Name} died and dropped {defender.Gold} gold.");
             }
         }
+
+        #endregion
     }
 }

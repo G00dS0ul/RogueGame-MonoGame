@@ -1,16 +1,13 @@
 ﻿using RogueSharp;
 using RogueSharp_MonoGame.Interfaces;
 using RogueSharp_MonoGame.Systems;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xna.Framework;
 using Path = RogueSharp.Path;
 
 namespace RogueSharp_MonoGame.Behavior
 {
     public class StandardMoveAndAttack : IBehaviour
     {
+        #region Public Method
         public bool Act(Core.Monster monster, CommandSystem commandSystem)
         {
             var dungeonMap = GameSession.DungeonMap;
@@ -20,7 +17,7 @@ namespace RogueSharp_MonoGame.Behavior
             if (!monster.TurnsAlerted.HasValue)
             {
                 monsterFov.ComputeFov(monster.X, monster.Y, monster.Awareness, true);
-                if(monsterFov.IsInFov(player.X, player.Y))
+                if (monsterFov.IsInFov(player.X, player.Y))
                 {
                     GameSession.MessageLog.Add($"{monster.Name} is eager to fight {player.Name}");
                     monster.TurnsAlerted = 1;
@@ -37,9 +34,9 @@ namespace RogueSharp_MonoGame.Behavior
 
                 try
                 {
-                    path = pathFinder.ShortestPath(dungeonMap.GetCell(monster.X, monster.Y), dungeonMap.GetCell( player.X, player.Y));
+                    path = pathFinder.ShortestPath(dungeonMap.GetCell(monster.X, monster.Y), dungeonMap.GetCell(player.X, player.Y));
                 }
-                catch (PathNotFoundException )
+                catch (PathNotFoundException)
                 {
                     GameSession.MessageLog.Add($"{monster.Name} waits for a turn");
                 }
@@ -69,5 +66,8 @@ namespace RogueSharp_MonoGame.Behavior
 
             return true;
         }
+
+        #endregion
+
     }
 }

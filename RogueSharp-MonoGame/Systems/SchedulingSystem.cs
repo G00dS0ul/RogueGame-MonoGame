@@ -1,20 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using RogueSharp_MonoGame.Interfaces;
+﻿using RogueSharp_MonoGame.Interfaces;
 
 namespace RogueSharp_MonoGame.Systems
 {
     public class SchedulingSystem
     {
+        #region Backing Variable
+
         private int _time;
         private readonly SortedDictionary<int, List<ISchedulable>> _schedulables;
+
+        #endregion
+
 
         public SchedulingSystem()
         {
             _time = 0;
             _schedulables = new SortedDictionary<int, List<ISchedulable>>();
         }
+
+        #region Public Methods
 
         public void Add(ISchedulable schedulable)
         {
@@ -75,5 +79,9 @@ namespace RogueSharp_MonoGame.Systems
             _time = 0;
             _schedulables.Clear();
         }
+
+        #endregion
+
+
     }
 }

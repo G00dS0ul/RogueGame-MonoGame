@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-using System.Reflection.Metadata.Ecma335;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using RogueSharp;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
@@ -10,14 +8,23 @@ namespace RogueSharp_MonoGame.Core
 {
     public class DungeonMap : Map
     {
+        #region Backing Varriable
+
         private FieldOfView _fieldOfView;
         private readonly List<Monster> _monsters;
         private readonly List<Door> _doors;
 
+        #endregion
+
+        #region Properties
+
         public List<Rectangle> Rooms { get; set; }
         public Stairs StairsUp { get; set; }
-        public Stairs StairsDown { get; set; }  
+        public Stairs StairsDown { get; set; }
         public int MonsterCount => _monsters.Count;
+
+        #endregion
+
 
         public DungeonMap()
         {
@@ -26,6 +33,9 @@ namespace RogueSharp_MonoGame.Core
             _monsters = [];
             _doors = [];
         }
+
+        #region Public Methods
+
         public void Initialize(int width, int height)
         {
             base.Initialize(width, height);
@@ -76,19 +86,11 @@ namespace RogueSharp_MonoGame.Core
                     continue;
                 }
 
-                var asciiValue = (int)monster.Symbol;
-                var tileX = (asciiValue % 16) * 8;
-                var tileY = (asciiValue / 16) * 8;
-
-                var sourceRect = new Rectangle(tileX, tileY, 8, 8);
-                var destRect = new Rectangle(monster.X * 8 * scale, monster.Y * 8 * scale, 8 * scale, 8 * scale);
-
-                spriteBatch.Draw(tileset, destRect, sourceRect, Colors.KoboldColor);
                 monster.Draw(spriteBatch, tileset);
 
-                monster.DrawStats(spriteBatch, i, font);
+                monster.DrawStats(spriteBatch, i, font, tileset);
                 i++;
-                
+
             }
 
             foreach (var door in _doors)
@@ -96,7 +98,7 @@ namespace RogueSharp_MonoGame.Core
                 door.Draw(spriteBatch, tileset, this, _fieldOfView);
             }
 
-            StairsUp?.Draw(spriteBatch, this,  tileset);
+            StairsUp?.Draw(spriteBatch, this, tileset);
             StairsDown?.Draw(spriteBatch, this, tileset);
         }
 
@@ -118,7 +120,7 @@ namespace RogueSharp_MonoGame.Core
             _monsters.Add(monster);
 
             SetIsWalkable(monster.X, monster.Y, false);
-                GameSession.SchedulingSystem.Add(monster);
+            GameSession.SchedulingSystem.Add(monster);
         }
         public void RemoveMonster(Monster monster)
         {
@@ -183,7 +185,7 @@ namespace RogueSharp_MonoGame.Core
                     SetCellProperties(cell.X, cell.Y, cell.IsTransparent, cell.IsWalkable, true);
                     mapChanged = true;
                 }
-                
+
             }
 
             if (mapChanged)
@@ -225,37 +227,6 @@ namespace RogueSharp_MonoGame.Core
         public Door GetDoor(int x, int y)
         {
             return _doors.SingleOrDefault(d => d.X == x && d.Y == y);
-        }
-
-        private void OpenDoor(Actor actor, int x, int y)
-        {
-            var door = GetDoor(x, y);
-            if (door != null && !door.IsOpen)
-            {
-                if (actor is Player)
-                {
-                    var currentRoom = Rooms.FirstOrDefault(r => r.Contains(actor.X, actor.Y));
-
-                    if (currentRoom != default)
-                    {
-                        var enemiesInRoomCount = _monsters.Count(m => currentRoom.Contains(m.X, m.Y));
-                        var roomBounds = new Rectangle(currentRoom.X - 1, currentRoom.Y - 1, currentRoom.Width + 2,
-                            currentRoom.Height + 2);
-
-                        if (enemiesInRoomCount > 0)
-                        {
-                            GameSession.MessageLog.Add(
-                                $"The Door is Locked!!! Defect {enemiesInRoomCount} Monster in this room first.");
-                            return;
-                        }
-                    }
-                }
-                door.IsOpen = true;
-                var cell = GetCell(x, y);
-                SetCellProperties(x, y, true, true, cell.IsExplored);
-                
-                GameSession.MessageLog.Add($"{actor.Name} opens the door.");
-            }
         }
 
         public void UpdateRoomDoorState()
@@ -324,5 +295,55 @@ namespace RogueSharp_MonoGame.Core
             var player = GameSession.Player;
             return StairsDown != null && StairsDown.X == player.X && StairsDown.Y == player.Y;
         }
+
+        public void RestoreSchedulingSystem()
+        {
+            GameSession.SchedulingSystem.Clear();
+
+            foreach (var monster in _monsters)
+            {
+                GameSession.SchedulingSystem.Add(monster);
+            }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void OpenDoor(Actor actor, int x, int y)
+        {
+            var door = GetDoor(x, y);
+            if (door != null && !door.IsOpen)
+            {
+                if (actor is Player)
+                {
+                    var currentRoom = Rooms.FirstOrDefault(r => r.Contains(actor.X, actor.Y));
+
+                    if (currentRoom != default)
+                    {
+                        var enemiesInRoomCount = _monsters.Count(m => currentRoom.Contains(m.X, m.Y));
+                        var roomBounds = new Rectangle(currentRoom.X - 1, currentRoom.Y - 1, currentRoom.Width + 2,
+                            currentRoom.Height + 2);
+
+                        if (enemiesInRoomCount > 0)
+                        {
+                            GameSession.MessageLog.Add(
+                                $"The Door is Locked!!! Defect {enemiesInRoomCount} Monster in this room first.");
+                            return;
+                        }
+                    }
+                }
+                door.IsOpen = true;
+                var cell = GetCell(x, y);
+                SetCellProperties(x, y, true, true, cell.IsExplored);
+
+                GameSession.MessageLog.Add($"{actor.Name} opens the door.");
+            }
+        }
+
+        #endregion
+
+
+
     }
 }

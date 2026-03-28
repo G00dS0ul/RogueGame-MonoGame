@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using RogueSharp_MonoGame.Core;
-using RogueSharp_MonoGame.Systems;
-using RogueSharp;
+﻿using RogueSharp_MonoGame.Systems;
 
 namespace RogueSharp_MonoGame.Interfaces
 {

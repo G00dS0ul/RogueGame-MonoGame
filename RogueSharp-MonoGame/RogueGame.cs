@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using RogueSharp_MonoGame.Core;
@@ -12,15 +9,25 @@ namespace RogueSharp_MonoGame
 {
     public class RogueGame : Game
     {
+        #region Backing Variable
+
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         private Texture2D _tileSet;
-        private KeyboardState _previousKeyboardState;
+        private InputSystem _inputSystem = new InputSystem();
         private SpriteFont _font;
         private CommandSystem _commandSystem = new CommandSystem();
         private static int _mapLevel = 1;
+        private Dictionary<int, DungeonMap> _mapHistory = new Dictionary<int, DungeonMap>();
+
+        #endregion
+
+        #region Properties
 
         public static MessageLog MessageLog { get; private set; } = new MessageLog();
+
+
+        #endregion
 
         public RogueGame()
         {
@@ -29,7 +36,8 @@ namespace RogueSharp_MonoGame
             IsMouseVisible = true;
         }
 
-        // Layout constants
+        #region Layout Constants
+
         public const int MapWidth = 50;      // tiles
         public const int MapHeight = 30;     // tiles (reduced to leave room for message log)
         public const int TileSize = 8;
@@ -38,6 +46,10 @@ namespace RogueSharp_MonoGame
         public const int MapPixelHeight = MapHeight * TileSize * TileScale; // 480
         public const int StatsWidth = 200;
         public const int MessageLogHeight = 270;
+
+        #endregion
+
+        #region Protected Methods
 
         protected override void Initialize()
         {
@@ -53,12 +65,13 @@ namespace RogueSharp_MonoGame
 
             var mapGenerator = new MapGenerator(MapWidth, MapHeight, 20, 5, 10, _mapLevel);
             GameSession.DungeonMap = mapGenerator.CreateMap();
+            _mapHistory.Add(_mapLevel, GameSession.DungeonMap);
 
             GameSession.SchedulingSystem.Add(GameSession.Player);
             _commandSystem.IsPlayerTurn = true;
 
             GameSession.MessageLog.Add($"Welcome to the dungeon, G00dS0ul!");
-            
+
             base.Initialize();
         }
 
@@ -73,16 +86,15 @@ namespace RogueSharp_MonoGame
 
         protected override void Update(GameTime gameTime)
         {
-            var currentKeyboardState = Keyboard.GetState();
+            _inputSystem.Update();
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (_inputSystem.IsExitRequested())
                 Exit();
 
             if (GameSession.Player != null && GameSession.DungeonMap != null)
             {
                 if (GameSession.Player.Health <= 0)
                 {
-                    _previousKeyboardState = currentKeyboardState;
                     base.Update(gameTime);
                     return;
                 }
@@ -90,33 +102,30 @@ namespace RogueSharp_MonoGame
                 if (_commandSystem.IsPlayerTurn)
                 {
                     var didPlayerAct = false;
-                    Direction? direction = null;
 
-                    if (currentKeyboardState.IsKeyDown(Keys.Down) && _previousKeyboardState.IsKeyUp(Keys.Down))
-                    {
-                        direction = Direction.Down;
-                    }
-                    else if (currentKeyboardState.IsKeyDown(Keys.Up) && _previousKeyboardState.IsKeyUp(Keys.Up))
-                    {
-                        direction = Direction.Up;
-                    }
-                    if (currentKeyboardState.IsKeyDown(Keys.Left) && _previousKeyboardState.IsKeyUp(Keys.Left))
-                    {
-                        direction = Direction.Left;
-                    }
-                    if (currentKeyboardState.IsKeyDown(Keys.Right) && _previousKeyboardState.IsKeyUp(Keys.Right))
-                    {
-                        direction = Direction.Right;
-                    }
-
-                    if (currentKeyboardState.IsKeyDown(Keys.OemPeriod) && _previousKeyboardState.IsKeyUp(Keys.OemPeriod))
+                    if (_inputSystem.IsDescendRequested())
                     {
                         if (GameSession.DungeonMap.CanMoveDownToNextLevel())
                         {
+                            GameSession.DungeonMap.SetIsWalkable(GameSession.Player.X, GameSession.Player.Y, true);
                             _mapLevel++;
 
-                            var mapGenerator = new MapGenerator(MapWidth, MapHeight, 20, 5, 10, _mapLevel);
-                            GameSession.DungeonMap = mapGenerator.CreateMap();
+                            if (_mapHistory.TryGetValue(_mapLevel, out var savedMap))
+                            {
+                                GameSession.DungeonMap = savedMap; GameSession.DungeonMap.RestoreSchedulingSystem();
+                            }
+
+                            else
+                            {
+                                var mapGenerator = new MapGenerator(MapWidth, MapHeight, 20, 5, 10, _mapLevel);
+                                GameSession.DungeonMap = mapGenerator.CreateMap();
+                                _mapHistory.Add(_mapLevel, GameSession.DungeonMap);
+                            }
+
+                            GameSession.Player.X = GameSession.DungeonMap.StairsUp.X;
+                            GameSession.Player.Y = GameSession.DungeonMap.StairsUp.Y;
+                            GameSession.DungeonMap.AddPlayer(GameSession.Player);
+
 
                             MessageLog.Add($"You descend into the dungeon... level {_mapLevel}.");
 
@@ -128,7 +137,7 @@ namespace RogueSharp_MonoGame
                         }
                     }
 
-                    if (currentKeyboardState.IsKeyDown(Keys.OemComma) && _previousKeyboardState.IsKeyUp(Keys.OemComma))
+                    if (_inputSystem.IsAscendRequested())
                     {
                         if (GameSession.DungeonMap.CanMoveUpToPreviousLevel())
                         {
@@ -138,10 +147,26 @@ namespace RogueSharp_MonoGame
                             }
                             else
                             {
+                                GameSession.DungeonMap.SetIsWalkable(GameSession.Player.X, GameSession.Player.Y, true);
+
                                 _mapLevel--;
 
-                                var mapGenerator = new MapGenerator(MapWidth, MapHeight, 20, 5, 10, _mapLevel);
-                                GameSession.DungeonMap = mapGenerator.CreateMap();
+                                if (_mapHistory.TryGetValue(_mapLevel, out var savedMap))
+                                {
+                                    GameSession.DungeonMap = savedMap;
+                                    GameSession.DungeonMap.RestoreSchedulingSystem();
+                                }
+                                else
+                                {
+                                    var mapGenerator = new MapGenerator(MapWidth, MapHeight, 20, 5, 10, _mapLevel);
+                                    GameSession.DungeonMap = mapGenerator.CreateMap();
+                                    _mapHistory.Add(_mapLevel, GameSession.DungeonMap);
+                                }
+
+
+                                GameSession.Player.X = GameSession.DungeonMap.StairsDown.X;
+                                GameSession.Player.Y = GameSession.DungeonMap.StairsDown.Y;
+                                GameSession.DungeonMap.AddPlayer(GameSession.Player);
 
                                 MessageLog.Add($"You ascend the stairs to level {_mapLevel}");
 
@@ -151,9 +176,11 @@ namespace RogueSharp_MonoGame
 
                         else
                         {
-                            MessageLog.Add("You aren't tanding on upward stairs.");
+                            MessageLog.Add("You aren't standing on upward stairs.");
                         }
                     }
+
+                    var direction = _inputSystem.GetPlayerMovement();
 
                     if (direction.HasValue)
                     {
@@ -170,10 +197,8 @@ namespace RogueSharp_MonoGame
                 {
                     _commandSystem.ActivateMonsters();
                 }
-                
-            }
 
-            _previousKeyboardState = currentKeyboardState;
+            }
 
             base.Update(gameTime);
         }
@@ -191,16 +216,8 @@ namespace RogueSharp_MonoGame
 
             if (GameSession.Player != null)
             {
-                GameSession.Player.DrawStats(_spriteBatch, _font);
-                var playerAscii = '@';
-                var tileX = (playerAscii % 16) * 8;
-                var tileY = (playerAscii / 16) * 8;  // Fixed: multiply by 8, not modulo
-                var sourceRect = new Rectangle(tileX, tileY, 8, 8);
-
-                var scale = 2;
-                var destRect = new Rectangle(GameSession.Player.X * 8 * scale, GameSession.Player.Y * 8 * scale, 8 * scale, 8 * scale);
-
-                _spriteBatch.Draw(_tileSet, destRect, sourceRect, Colors.Player);
+                GameSession.Player.DrawStats(_spriteBatch, _font, _mapLevel);
+                GameSession.Player.Draw(_spriteBatch, _tileSet);
             }
 
             if (GameSession.MessageLog != null)
@@ -212,7 +229,11 @@ namespace RogueSharp_MonoGame
             base.Draw(gameTime);
         }
 
-        private Rectangle GetSourceRect(char character)
+        #endregion
+
+        #region Public Methods
+
+        public static Rectangle GetSourceRect(char character)
         {
             var asciiValue = (int)character;
             var tileX = (asciiValue % 16) * 8;
@@ -220,5 +241,8 @@ namespace RogueSharp_MonoGame
 
             return new Rectangle(tileX, tileY, 8, 8);
         }
+
+        #endregion
+
     }
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueSharp;
 using IDrawable = RogueSharp_MonoGame.Interfaces.IDrawable;
@@ -11,11 +8,17 @@ namespace RogueSharp_MonoGame.Core
 {
     public class Stairs : IDrawable
     {
+        #region Properties
+
         public Color Color { get; set; }
         public char Symbol { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
         public bool IsUp { get; set; }
+
+        #endregion
+
+        #region Public Methods
 
         public void Draw(SpriteBatch console, Texture2D tileset)
         {
@@ -49,5 +52,8 @@ namespace RogueSharp_MonoGame.Core
 
             spriteBatch.Draw(tileset, destRect, sourceRect, Color);
         }
+
+        #endregion
+
     }
 }

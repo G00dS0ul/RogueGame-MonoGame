@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace RogueSharp_MonoGame.Interfaces
+﻿namespace RogueSharp_MonoGame.Interfaces
 {
     public interface ISchedulable
     {

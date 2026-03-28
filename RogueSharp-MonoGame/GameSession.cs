@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using RogueSharp_MonoGame.Core;
+﻿using RogueSharp_MonoGame.Core;
 using RogueSharp_MonoGame.Systems;
 using RogueSharp.Random;
 
@@ -9,6 +6,7 @@ namespace RogueSharp_MonoGame
 {
     public static class GameSession
     {
+
         public static Player Player { get; set; }
         public static DungeonMap DungeonMap { get; set; }
         public static MessageLog MessageLog { get; set; }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using RogueSharp_MonoGame.Core;
+﻿using RogueSharp_MonoGame.Core;
 using RogueSharp.DiceNotation;
 
 namespace RogueSharp_MonoGame.Monster
@@ -24,7 +21,7 @@ namespace RogueSharp_MonoGame.Monster
                 MaxHealth = health,
                 Name = "Kobold",
                 Speed = 14,
-                Symbol = 'X'
+                Symbol = (char)6
             };
         }
     }

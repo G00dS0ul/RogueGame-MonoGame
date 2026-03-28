@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 using RogueSharp;
@@ -10,18 +7,25 @@ namespace RogueSharp_MonoGame.Core
 {
     public class Door : IDrawable
     {
+        #region Properties
+
         public bool IsOpen { get; set; }
         public Color Color { get; set; }
         public Color BackgroundColor { get; set; }
         public char Symbol { get; set; }
         public int X { get; set; }
-        public int Y { get; set; }  
+        public int Y { get; set; }
+
+        #endregion
+
         public Door()
         {
             Symbol = '+';
             Color = Colors.Door;
             BackgroundColor = Colors.DoorBackground;
         }
+
+        #region Public Method
 
         public void Draw(SpriteBatch console, Texture2D tileset)
         {
@@ -43,7 +47,7 @@ namespace RogueSharp_MonoGame.Core
             }
             else
             {
-                
+
                 Color = Colors.Door;
                 BackgroundColor = Colors.DoorBackground;
             }
@@ -58,5 +62,8 @@ namespace RogueSharp_MonoGame.Core
 
             spriteBatch.Draw(tileset, destRect, sourceRect, Color);
         }
+
+        #endregion
+
     }
 }

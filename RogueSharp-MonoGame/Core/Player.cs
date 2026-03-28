@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueSharp_MonoGame.Core
@@ -23,12 +18,12 @@ namespace RogueSharp_MonoGame.Core
             MaxHealth = 100;
             Speed = 10;
             Color = Colors.Player;
-            Symbol = '@';
+            Symbol = (char)2;
             X = 10;
             Y = 10;
         }
 
-        public void DrawStats(SpriteBatch spriteBatch, SpriteFont font)
+        public void DrawStats(SpriteBatch spriteBatch, SpriteFont font, int mapLevel)
         {
             // Draw stats in the right panel (after the map area)
             var startX = RogueGame.MapPixelWidth + 10;
@@ -39,9 +34,10 @@ namespace RogueSharp_MonoGame.Core
             spriteBatch.DrawString(font, $"Attack: {Attack} ({AttackChance}%)", new Vector2(startX, startY + 40), Color.Red);
             spriteBatch.DrawString(font, $"Defense: {Defense}({DefenseChance}%)", new Vector2(startX, startY + 60), Color.White);
             spriteBatch.DrawString(font, $"Gold: {Gold}", new Vector2(startX, startY + 80), Color.Yellow);
+            spriteBatch.DrawString(font, $"Dungeon Level: {mapLevel}", new Vector2(startX, startY + 100), Color.LightBlue);
 
-            var enemyCOunt = GameSession.DungeonMap?.MonsterCount ?? 0;
-            spriteBatch.DrawString(font, $"Enemies Remaining: {enemyCOunt}", new Vector2(startX, startY + 100), Color.OrangeRed);
+            var enemyCount = GameSession.DungeonMap?.MonsterCount ?? 0;
+            spriteBatch.DrawString(font, $"Enemies Remaining: {enemyCount}", new Vector2(startX, startY + 120), Color.OrangeRed);
         }
     }
 }
